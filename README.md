@@ -1,2 +1,0 @@
-# remote_assist
-remotelogin
