@@ -10,6 +10,7 @@
 #include <DTitlebar>
 #include <DSpinner>
 #include <QTime>
+#include <DWidgetUtil>
 
 #define WIN_SIZE QSize(360, 320)
 #define BTN_SIZE QSize(162,37)
@@ -22,13 +23,11 @@ askHelp::askHelp(QWidget *parent) : DMainWindow(parent)
     tit->setIcon(QIcon(":/images/hand.png")); //添加图标
     tit->setTitle("我要求助");
     this->setFixedSize(WIN_SIZE);
-    int cx = (QApplication::desktop()->width() - width()) / 2;
-    int cy = (QApplication::desktop()->height() - height()) / 2;
-    this->move(cx,cy);
+    Dtk::Widget::moveToCenter(this);
     generCode();
     connect(cancel_btn,&DSuggestButton::clicked,this,&askHelp::close);
     time = new QTimer(this);
-    time->setInterval(1*1000);
+    time->setInterval(2*1000);
     time->setSingleShot(false);
     connect(time,&QTimer::timeout,this,&askHelp::getCode);
     time->start();
@@ -181,6 +180,7 @@ int askHelp::getVerCode()
     int rand_code = qrand() % (999999 - 100000) +100000;
     return rand_code;
 }
+
 
 
 

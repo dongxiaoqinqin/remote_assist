@@ -5,6 +5,7 @@
 #include <QDebug>
 #include <QDesktopWidget>
 #include <QMessageBox>
+#include <DWidgetUtil>
 
 #define WIN_SIZE QSize(360, 320)
 #define BTN_SIZE QSize(162,37)
@@ -17,10 +18,7 @@ helpOther::helpOther(QWidget *parent) : DMainWindow(parent)
     tit->setTitle("帮助别人");
     this->setFixedSize(WIN_SIZE);
     // w.setAttribute(Qt::WA_TranslucentBackground);
-    QDesktopWidget *desk = QApplication::desktop();
-    int wd = desk->width();
-    int ht = desk->height();
-    this->move((wd - width()) / 2, (ht - height()) / 2);
+    Dtk::Widget::moveToCenter(this);
     inputCode();
 }
 
@@ -66,7 +64,7 @@ void helpOther::inputCode()
     helpLayout->addWidget(cancle_btn, 0, Qt::AlignCenter);
     helpLayout->addStretch(40);
     helpInputCode->setLayout(helpLayout);
-
+    connect(cancle_btn, &DSuggestButton::clicked, this, &helpOther::close);
     connect(code_edit, SIGNAL(textChanged(const QString &)), this, SLOT(setCompleter(const QString &)));
 }
 
@@ -101,7 +99,7 @@ void helpOther::setUpConn()
 
     if (code_edit->text().toInt() == clipBoard->text().toInt()) {
         time = new QTimer(this);
-        time->setInterval(2 * 1000);
+        time->setInterval(5 * 1000);
         time->setSingleShot(false);
         connect(time, &QTimer::timeout, this, &helpOther::remotAssiant);
         time->start();
@@ -110,16 +108,19 @@ void helpOther::setUpConn()
 
 void helpOther::setCompleter(const QString &)
 {
-    qDebug() << "aaa" << code_edit->text().toInt() << endl;
-    qDebug() << "bbb" << clipBoard->text().toInt() << endl;
-    if (code_edit->text().length() > 6) {
-        QMessageBox::information(this, "验证码不能超过6位", tr("OK"));
-    }
+//    qDebug() << "aaa" << code_edit->text().toInt() << endl;
+//    qDebug() << "bbb" << clipBoard->text().toInt() << endl;
     for (int i = 0; i < code_edit->text().length(); i++) {
         if (code_edit->text()[i] < '0' || code_edit->text()[i] > '9') {
-            QMessageBox::information(this, "请输入数字", tr("OK"));
+            QMessageBox::information(this, "提示", "请输入数字",
+                                    QMessageBox::Yes);
         }
     }
+    if (code_edit->text().length() > 6) {
+        QMessageBox::information(this, "提示", "验证码不能超过6位",
+                                QMessageBox::Cancel);
+    }
+    disconnect(cancle_btn, &DSuggestButton::clicked, this, &helpOther::close);
     cancle_btn->setText("连接");
     connect(cancle_btn, &DSuggestButton::clicked, this, &helpOther::setUpConn);
     if (code_edit->text().toInt() != clipBoard->text().toInt()) {
@@ -129,7 +130,6 @@ void helpOther::setCompleter(const QString &)
 
 void helpOther::errorConn()
 {
-    //tim ->stop();
     failConn = new QWidget();
     setCentralWidget(failConn);
     fail_conn = new DLabel;
